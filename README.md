@@ -4,7 +4,7 @@ Une application web responsive pour gérer votre inventaire de courses avec des 
 
 ## URL de déploiement
 
-L'application est déployée et accessible à l'adresse : https://inventaireb.netlify.app/
+L'application est déployée et accessible à l'adresse : https://inventaire-recettes.netlify.app/recettes
 
 ## Fonctionnalités
 
