@@ -1,10 +1,10 @@
-# Inventaire de Courses
+# Inventaire de Courses et Recettes
 
 Une application web responsive pour gérer votre inventaire de courses avec des fonctionnalités CRUD complètes, des alertes de rupture de stock et des suggestions d'achat intelligentes.
 
 ## URL de déploiement
 
-L'application est déployée et accessible à l'adresse : https://inventaire-recettes.netlify.app/recettes
+L'application est déployée et accessible à l'adresse : https://inventaire-recettes.netlify.app/
 
 ## Fonctionnalités
 
