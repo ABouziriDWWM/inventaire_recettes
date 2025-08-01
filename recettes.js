@@ -1036,12 +1036,14 @@ function handleToggleClick(event) {
     const content = Array.from(btn.closest(".day-card").children).filter(
       (el) => !el.classList.contains("mobile-toggle-btn")
     );
-    content.forEach((el) => (el.style.display = isActive ? "" : "none"));
+
+    // Only toggle display when button is clicked
+    content.forEach((el) => {
+      el.style.display = isActive ? "" : "none";
+    });
 
     // Update button text and icon
-    const dayName = btn
-      .querySelector("span")
-      .textContent.replace(/^(Afficher|Masquer) /, "");
+    const dayName = getDayName(btn.closest(".day-card"));
     btn.querySelector("span").textContent = isActive
       ? `Masquer ${dayName}`
       : `Afficher ${dayName}`;
@@ -1079,11 +1081,13 @@ function setupToggleButton(card, name) {
 
   card.insertBefore(btn, card.firstChild);
 
-  // Hide content initially
+  // Hide all content immediately (except the button)
   const content = Array.from(card.children).filter(
     (el) => !el.classList.contains("mobile-toggle-btn")
   );
-  content.forEach((el) => (el.style.display = "none"));
+  content.forEach((el) => {
+    el.style.display = "none";
+  });
 
   btn.addEventListener("click", handleToggleClick);
 }
@@ -1096,6 +1100,8 @@ function setupRecipeToggleButton(card, body) {
   btn.style.marginBottom = "10px";
 
   card.insertBefore(btn, body);
+
+  // Hide body immediately
   body.style.display = "none";
 
   btn.addEventListener("click", handleToggleClick);
