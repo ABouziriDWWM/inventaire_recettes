@@ -44,7 +44,6 @@ L'application est déployée et accessible à l'adresse : https://inventaire-rec
 - **HTML5** : Structure sémantique
 - **CSS3** : Styles modernes avec variables CSS et animations
 - **JavaScript ES6+** : Logique applicative orientée objet
-- **IndexedDB** : Base de données NoSQL côté client pour la persistance
 
 ## Structure des données
 
