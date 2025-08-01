@@ -1076,20 +1076,34 @@ function setupToggleButton(card, name) {
   const btn = document.createElement("button");
   btn.className = "mobile-toggle-btn";
   btn.type = "button";
-  btn.innerHTML = `<i class="fas fa-chevron-down"></i> <span>Afficher ${name}</span>`;
-  btn.style.marginBottom = "10px";
 
   card.insertBefore(btn, card.firstChild);
 
-  // Hide all content immediately (except the button)
   const content = Array.from(card.children).filter(
     (el) => !el.classList.contains("mobile-toggle-btn")
   );
-  content.forEach((el) => {
-    el.style.display = "none";
-  });
 
-  btn.addEventListener("click", handleToggleClick);
+  // Function to update button state
+  function updateButtonState(isVisible) {
+    if (isVisible) {
+      btn.innerHTML = `<i class="fas fa-chevron-up"></i> <span>Masquer ${name}</span>`;
+      btn.classList.add("active");
+      content.forEach((el) => (el.style.display = ""));
+    } else {
+      btn.innerHTML = `<i class="fas fa-chevron-down"></i> <span>Afficher ${name}</span>`;
+      btn.classList.remove("active");
+      content.forEach((el) => (el.style.display = "none"));
+    }
+  }
+
+  // Initialize as visible
+  // updateButtonState(true);
+  updateButtonState(false);
+
+  btn.addEventListener("click", () => {
+    const isCurrentlyVisible = btn.classList.contains("active");
+    updateButtonState(!isCurrentlyVisible);
+  });
 }
 
 function setupRecipeToggleButton(card, body) {
