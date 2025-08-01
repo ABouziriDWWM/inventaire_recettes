@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recettes de la Semaine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Retour à l'inventaire
+            </a>
+            <h1><i class="fas fa-utensils"></i> Recettes de la Semaine</h1>
+            <p>Planifiez vos déjeuners et dîners en fonction de votre inventaire</p>
+        </header>
+
+        <!-- Bouton de bascule pour mobile -->
+        <div class="mobile-toggle-container">
+            <button id="mobile-toggle-btn" class="mobile-toggle-btn">
+                <i class="fas fa-eye"></i>
+                <span>Afficher/Masquer les sections</span>
+            </button>
+        </div>
+
+        <main class="main-content">
+            <!-- Section d'ajout de recette -->
+            <section class="add-recipe-section collapsible-section">
+                <h2><i class="fas fa-plus-circle"></i> Ajouter une recette</h2>
+                <form id="add-recipe-form" class="add-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="recipe-name">Nom de la recette</label>
+                            <input type="text" id="recipe-name" required
+                                placeholder="Ex: Pâtes carbonara, Salade césar...">
+                        </div>
+                        <div class="form-group">
+                            <label for="recipe-type">Type</label>
+                            <select id="recipe-type" required>
+                                <option value="">Choisir un type</option>
+                                <option value="dejeuner">Déjeuner</option>
+                                <option value="diner">Dîner</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipe-instructions">Instructions</label>
+                        <textarea id="recipe-instructions" rows="3"
+                            placeholder="Décrivez les étapes de préparation..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ingrédients</label>
+                        <div id="ingredients-container">
+                            <div class="ingredient-row">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <input type="text" class="ingredient-name" placeholder="Nom (ex: Pâtes)"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="number" class="ingredient-quantity" min="0" placeholder="Quantité"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <select class="ingredient-unit" required>
+                                            <option value="">Unité</option>
+                                            <option value="pièces">Pièces</option>
+                                            <option value="kg">Kilogrammes</option>
+                                            <option value="g">Grammes</option>
+                                            <option value="L">Litres</option>
+                                            <option value="mL">Millilitres</option>
+                                            <option value="boîtes">Boîtes</option>
+                                            <option value="paquets">Paquets</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="add-ingredient" class="btn btn-outline">
+                            <i class="fas fa-plus"></i> Ajouter un ingrédient
+                        </button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter la recette
+                    </button>
+                </form>
+            </section>
+
+            <!-- Section des recettes -->
+            <section class="recipes-section collapsible-section">
+                <div class="search-controls">
+                    <div class="search-group">
+                        <input type="text" id="search-recipe" placeholder="Rechercher une recette...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="filter-group">
+                        <select id="filter-type">
+                            <option value="all">Toutes les recettes</option>
+                            <option value="dejeuner">Déjeuner</option>
+                            <option value="diner">Dîner</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="recipes-grid" class="recipes-grid">
+                    <!-- Les recettes seront ajoutées ici dynamiquement -->
+                </div>
+            </section>
+
+            <!-- Section de la semaine -->
+            <section class="week-section collapsible-section">
+                <h2><i class="fas fa-calendar-week"></i> Planification de la Semaine</h2>
+                <div class="week-grid">
+                    <!-- Lundi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Lundi</h3>
+                        <div class="day-header">Lundi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="monday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('monday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="monday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('monday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mardi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Mardi</h3>
+                        <div class="day-header">Mardi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="tuesday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('tuesday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="tuesday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('tuesday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mercredi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Mercredi</h3>
+                        <div class="day-header">Mercredi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="wednesday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('wednesday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="wednesday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('wednesday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jeudi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Jeudi</h3>
+                        <div class="day-header">Jeudi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="thursday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('thursday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="thursday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('thursday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vendredi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Vendredi</h3>
+                        <div class="day-header">Vendredi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="friday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('friday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="friday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('friday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Samedi -->
+                    <div class="day-card">
+                        <h3 class="day-title">Samedi</h3>
+                        <div class="day-header">Samedi</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="saturday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('saturday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="saturday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('saturday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dimanche -->
+                    <div class="day-card">
+                        <h3 class="day-title">Dimanche</h3>
+                        <div class="day-header">Dimanche</div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-sun"></i> Déjeuner</div>
+                            <div id="sunday-lunch" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('sunday', 'lunch')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="meal-section">
+                            <div class="meal-title"><i class="fas fa-moon"></i> Dîner</div>
+                            <div id="sunday-dinner" class="meal-content"></div>
+                            <div class="meal-actions">
+                                <button class="btn btn-small btn-primary"
+                                    onclick="openRecipeSelector('sunday', 'dinner')">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section des suggestions d'achat -->
+            <section class="suggestions-section collapsible-section">
+                <h2><i class="fas fa-shopping-cart"></i> Suggestions d'Achat</h2>
+                <p>Articles nécessaires pour préparer toutes les recettes planifiées</p>
+                <div id="suggestions-list" class="suggestions-list">
+                    <div class="suggestion-item">
+                        <div class="suggestion-info">
+                            <i class="fas fa-shopping-basket"></i>
+                            <span>Planifiez vos recettes pour voir les suggestions d'achat</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal pour sélectionner une recette -->
+    <div id="recipe-selector-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-list"></i> Sélectionnez une recette</h3>
+                <button class="close-btn" id="close-selector-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="selector-recipes-list" class="recipes-grid">
+                    <!-- Les recettes seront ajoutées ici dynamiquement -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-selector">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour modifier une recette -->
+    <div id="edit-recipe-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Modifier la recette</h3>
+                <button class="close-btn" id="close-edit-modal">&times;</button>
+            </div>
+            <form id="edit-recipe-form" class="add-form">
+                <input type="hidden" id="edit-recipe-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-recipe-name">Nom de la recette</label>
+                        <input type="text" id="edit-recipe-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-recipe-type">Type</label>
+                        <select id="edit-recipe-type" required>
+                            <option value="dejeuner">Déjeuner</option>
+                            <option value="diner">Dîner</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-recipe-instructions">Instructions</label>
+                    <textarea id="edit-recipe-instructions" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ingrédients</label>
+                    <div id="edit-ingredients-container">
+                        <!-- Les ingrédients seront ajoutés ici dynamiquement -->
+                    </div>
+                    <button type="button" id="add-edit-ingredient" class="btn btn-outline">
+                        <i class="fas fa-plus"></i> Ajouter un ingrédient
+                    </button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="recettes.js"></script>
+    <!-- Styles pour les animations des notifications -->
+    <style>
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    </style>
+</body>
+
+</html>

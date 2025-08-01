@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire de Courses</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <a href="recettes.html" class="nav-link">
+                <i class="fas fa-arrow-left"></i> Retour aux Recettes
+            </a>
+            <h1><i class="fas fa-shopping-cart"></i> Inventaire de Courses</h1>
+            <p>Gérez votre inventaire et ne manquez plus jamais de provisions</p>
+
+        </header>
+
+        <main class="main-content">
+            <!-- Section d'ajout d'article -->
+            <section class="add-item-section">
+                <h2><i class="fas fa-plus-circle"></i> Ajouter un article</h2>
+                <form id="add-item-form" class="add-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="item-name">Nom de l'article</label>
+                            <input type="text" id="item-name" required placeholder="Ex: Lait, Pain, Pommes...">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-quantity">Quantité</label>
+                            <input type="number" id="item-quantity" min="0" required placeholder="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="item-unit">Unité</label>
+                            <select id="item-unit" required>
+                                <option value="">Choisir une unité</option>
+                                <option value="pièces">Pièces</option>
+                                <option value="kg">Kilogrammes</option>
+                                <option value="g">Grammes</option>
+                                <option value="L">Litres</option>
+                                <option value="mL">Millilitres</option>
+                                <option value="boîtes">Boîtes</option>
+                                <option value="paquets">Paquets</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="item-threshold">Seuil d'alerte</label>
+                            <input type="number" id="item-threshold" min="0" required placeholder="Quantité minimale">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter l'article
+                    </button>
+                </form>
+            </section>
+
+            <!-- Section des suggestions -->
+            <section class="suggestions-section" id="suggestions-section" style="display: none;">
+                <h2><i class="fas fa-lightbulb"></i> Suggestions d'achat</h2>
+                <div id="suggestions-list" class="suggestions-list"></div>
+            </section>
+
+            <!-- Section de recherche et filtres -->
+            <section class="search-section">
+                <div class="search-controls">
+                    <div class="search-group">
+                        <input type="text" id="search-input" placeholder="Rechercher un article...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="filter-group">
+                        <select id="filter-status">
+                            <option value="all">Tous les articles</option>
+                            <option value="in-stock">En stock</option>
+                            <option value="low-stock">Stock faible</option>
+                            <option value="out-of-stock">Rupture de stock</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section de l'inventaire -->
+            <section class="inventory-section">
+                <div class="inventory-header">
+                    <h2><i class="fas fa-list"></i> Inventaire</h2>
+                    <div class="inventory-stats">
+                        <span class="stat">
+                            <i class="fas fa-boxes"></i>
+                            Total: <span id="total-items">0</span>
+                        </span>
+                        <span class="stat alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Alertes: <span id="alert-items">0</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="inventory-list" class="inventory-list">
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-basket"></i>
+                        <h3>Votre inventaire est vide</h3>
+                        <p>Commencez par ajouter vos premiers articles ci-dessus</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal pour éditer un article -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Modifier l'article</h3>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <form id="edit-form" class="edit-form">
+                <input type="hidden" id="edit-item-id">
+                <div class="form-group">
+                    <label for="edit-item-name">Nom de l'article</label>
+                    <input type="text" id="edit-item-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-item-quantity">Quantité</label>
+                        <input type="number" id="edit-item-quantity" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-item-unit">Unité</label>
+                        <select id="edit-item-unit" required>
+                            <option value="pièces">Pièces</option>
+                            <option value="kg">Kilogrammes</option>
+                            <option value="g">Grammes</option>
+                            <option value="L">Litres</option>
+                            <option value="mL">Millilitres</option>
+                            <option value="boîtes">Boîtes</option>
+                            <option value="paquets">Paquets</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-item-threshold">Seuil d'alerte</label>
+                    <input type="number" id="edit-item-threshold" min="0" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-edit">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-trash"></i> Confirmer la suppression</h3>
+                <button class="close-btn" id="close-delete-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet article ?</p>
+                <p><strong id="delete-item-name"></strong></p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-delete">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
