@@ -1,6 +1,22 @@
 // Vérifier si l'intégration MongoDB est disponible
 const useMongoDBIntegration = typeof MongoDBIntegration !== "undefined";
 
+function checkRecipeAuthentication() {
+  const token = localStorage.getItem("authToken");
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+  if (!token && !isLoggedIn) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+// Check authentication before any initialization
+if (!checkRecipeAuthentication()) {
+  throw new Error("Redirecting to login");
+}
+
 // Données de démonstration
 const sampleRecipes = [
   {

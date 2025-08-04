@@ -6,6 +6,39 @@ const STORE_NAME = "articles";
 // Vérifier si l'intégration MongoDB est disponible
 const useMongoDBIntegration = typeof MongoDBIntegration !== "undefined";
 
+// In your frontend JavaScript
+async function registerUser(userData) {
+  try {
+    const response = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    // ✅ Check if response is ok before parsing JSON
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    // ✅ Check if response has content before parsing
+    const contentLength = response.headers.get("content-length");
+    if (contentLength === "0") {
+      throw new Error("Empty response from server");
+    }
+
+    const data = await response.json();
+    console.log("Registration successful:", data);
+    return data;
+  } catch (error) {
+    console.error("Registration failed:", error.message);
+    throw error;
+  }
+}
+
 class InventoryManager {
   constructor() {
     this.db = null;
