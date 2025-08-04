@@ -1,3 +1,6 @@
+// Vérifier si l'intégration MongoDB est disponible
+const useMongoDBIntegration = typeof MongoDBIntegration !== "undefined";
+
 // Données de démonstration
 const sampleRecipes = [
   {
@@ -68,9 +71,66 @@ let weekPlan = {
 let recipes = [...sampleRecipes];
 let currentDay = "";
 let currentMeal = "";
+let mongoIntegration = null;
 
 // DOMContentLoaded
 document.addEventListener("DOMContentLoaded", function () {
+  // Check authentication before initializing recipes
+  if (typeof AuthManager !== "undefined") {
+    const authManager = new AuthManager();
+    authManager.checkAuthStatus().then((isAuthenticated) => {
+      if (isAuthenticated) {
+        initializeRecipesApp();
+      }
+      // If not authenticated, AuthManager.checkAuthStatus() will redirect to login.html
+    });
+  } else {
+    // Initialize directly without auth (fallback)
+    initializeRecipesApp();
+  }
+});
+
+// Extract current initialization logic into a separate function
+function initializeRecipesApp() {
+  renderRecipes();
+  renderWeekPlan();
+  generateShoppingSuggestions();
+
+  // Setup event listeners
+  document
+    .getElementById("add-recipe-form")
+    .addEventListener("submit", addRecipe);
+  document
+    .getElementById("edit-recipe-form")
+    .addEventListener("submit", updateRecipe);
+  // ... all other event listeners
+}
+
+// Initialisation de l'application
+async function initializeApp() {
+  // Initialiser l'intégration MongoDB si disponible
+  if (useMongoDBIntegration) {
+    mongoIntegration = new MongoDBIntegration();
+
+    // Si l'utilisateur est authentifié, charger les recettes depuis MongoDB
+    if (mongoIntegration.isAuthenticated()) {
+      try {
+        // Charger les recettes et le plan de la semaine depuis MongoDB
+        recipes = await mongoIntegration.getRecipes();
+        const weekPlanData = await mongoIntegration.getWeekPlan();
+        if (weekPlanData) {
+          weekPlan = weekPlanData;
+        }
+      } catch (error) {
+        console.error(
+          "Erreur lors du chargement des données depuis MongoDB:",
+          error
+        );
+        showNotification("Erreur lors du chargement des données", "error");
+      }
+    }
+  }
+
   // Initialisation
   renderRecipes();
   renderWeekPlan();
@@ -113,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("cancel-edit")
     .addEventListener("click", closeEditModal);
-});
+}
 
 // Rendu des recettes
 function renderRecipes() {
@@ -177,7 +237,7 @@ function renderRecipes() {
 }
 
 // Ajout d'une recette
-function addRecipe(e) {
+async function addRecipe(e) {
   e.preventDefault();
 
   const name = document.getElementById("recipe-name").value.trim();
@@ -216,20 +276,31 @@ function addRecipe(e) {
 
   // Création de la recette
   const newRecipe = {
-    id: Date.now(), // ID unique
+    id: Date.now().toString(), // ID unique en string pour compatibilité MongoDB
     name,
     type,
     instructions,
     ingredients,
   };
 
-  recipes.push(newRecipe);
-  renderRecipes();
-  showNotification("Recette ajoutée avec succès", "success");
+  try {
+    // Si l'utilisateur est connecté et que l'intégration MongoDB est disponible
+    if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+      // Sauvegarder dans MongoDB
+      await mongoIntegration.addRecipe(newRecipe);
+      // Recharger les recettes depuis MongoDB
+      recipes = await mongoIntegration.getRecipes();
+    } else {
+      // Ajouter localement
+      recipes.push(newRecipe);
+    }
 
-  // Réinitialisation du formulaire
-  document.getElementById("add-recipe-form").reset();
-  document.getElementById("ingredients-container").innerHTML = `
+    renderRecipes();
+    showNotification("Recette ajoutée avec succès", "success");
+
+    // Réinitialisation du formulaire
+    document.getElementById("add-recipe-form").reset();
+    document.getElementById("ingredients-container").innerHTML = `
                 <div class="ingredient-row">
                     <div class="form-row">
                         <div class="form-group">
@@ -253,6 +324,10 @@ function addRecipe(e) {
                     </div>
                 </div>
             `;
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de la recette:", error);
+    showNotification("Erreur lors de l'ajout de la recette", "error");
+  }
 }
 
 // Ajout d'une ligne d'ingrédient
@@ -390,10 +465,10 @@ function addEditIngredientRow() {
 }
 
 // Mise à jour d'une recette
-function updateRecipe(e) {
+async function updateRecipe(e) {
   e.preventDefault();
 
-  const id = parseInt(document.getElementById("edit-recipe-id").value);
+  const id = document.getElementById("edit-recipe-id").value;
   const name = document.getElementById("edit-recipe-name").value.trim();
   const type = document.getElementById("edit-recipe-type").value;
   const instructions = document.getElementById(
@@ -430,44 +505,83 @@ function updateRecipe(e) {
     return;
   }
 
-  // Mise à jour de la recette
-  const recipeIndex = recipes.findIndex((r) => r.id === id);
+  // Création de l'objet recette mis à jour
+  const updatedRecipe = {
+    id,
+    name,
+    type,
+    instructions,
+    ingredients,
+  };
 
-  if (recipeIndex !== -1) {
-    recipes[recipeIndex] = {
-      id,
-      name,
-      type,
-      instructions,
-      ingredients,
-    };
-
-    renderRecipes();
-    renderWeekPlan();
-    generateShoppingSuggestions();
-    showNotification("Recette mise à jour avec succès", "success");
-    closeEditModal();
-  }
-}
-
-// Suppression d'une recette
-function deleteRecipe(id) {
-  if (confirm("Êtes-vous sûr de vouloir supprimer cette recette ?")) {
-    recipes = recipes.filter((r) => r.id !== id);
-
-    // Retirer la recette de la planification
-    for (const day in weekPlan) {
-      for (const meal in weekPlan[day]) {
-        if (weekPlan[day][meal] === id) {
-          weekPlan[day][meal] = null;
-        }
+  try {
+    // Si l'utilisateur est connecté et que l'intégration MongoDB est disponible
+    if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+      // Mettre à jour dans MongoDB
+      await mongoIntegration.updateRecipe(updatedRecipe);
+      // Recharger les recettes depuis MongoDB
+      recipes = await mongoIntegration.getRecipes();
+    } else {
+      // Mise à jour locale
+      const recipeIndex = recipes.findIndex(
+        (r) => r.id.toString() === id.toString()
+      );
+      if (recipeIndex !== -1) {
+        recipes[recipeIndex] = updatedRecipe;
       }
     }
 
     renderRecipes();
     renderWeekPlan();
     generateShoppingSuggestions();
-    showNotification("Recette supprimée avec succès", "success");
+    showNotification("Recette mise à jour avec succès", "success");
+    closeEditModal();
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour de la recette:", error);
+    showNotification("Erreur lors de la mise à jour de la recette", "error");
+  }
+}
+
+// Suppression d'une recette
+async function deleteRecipe(id) {
+  if (confirm("Êtes-vous sûr de vouloir supprimer cette recette ?")) {
+    try {
+      // Si l'utilisateur est connecté et que l'intégration MongoDB est disponible
+      if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+        // Supprimer de MongoDB
+        await mongoIntegration.deleteRecipe(id);
+        // Recharger les recettes depuis MongoDB
+        recipes = await mongoIntegration.getRecipes();
+      } else {
+        // Suppression locale
+        recipes = recipes.filter((r) => r.id.toString() !== id.toString());
+      }
+
+      // Retirer la recette de la planification
+      for (const day in weekPlan) {
+        for (const meal in weekPlan[day]) {
+          if (
+            weekPlan[day][meal] &&
+            weekPlan[day][meal].toString() === id.toString()
+          ) {
+            weekPlan[day][meal] = null;
+          }
+        }
+      }
+
+      // Si l'utilisateur est connecté, mettre à jour le plan de la semaine dans MongoDB
+      if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+        await mongoIntegration.updateWeekPlan(weekPlan);
+      }
+
+      renderRecipes();
+      renderWeekPlan();
+      generateShoppingSuggestions();
+      showNotification("Recette supprimée avec succès", "success");
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la recette:", error);
+      showNotification("Erreur lors de la suppression de la recette", "error");
+    }
   }
 }
 
@@ -655,8 +769,23 @@ function openRecipeSelector(day, meal) {
 }
 
 // Sélection d'une recette pour la planification
-function selectRecipe(id) {
+async function selectRecipe(id) {
   weekPlan[currentDay][currentMeal] = id;
+
+  // Si l'utilisateur est connecté et que l'intégration MongoDB est disponible
+  if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+    try {
+      // Mettre à jour le plan de la semaine dans MongoDB
+      await mongoIntegration.updateWeekPlan(weekPlan);
+    } catch (error) {
+      console.error(
+        "Erreur lors de la mise à jour du plan de la semaine:",
+        error
+      );
+      showNotification("Erreur lors de la mise à jour du plan", "error");
+    }
+  }
+
   renderWeekPlan();
   generateShoppingSuggestions();
   closeSelectorModal();
@@ -664,8 +793,23 @@ function selectRecipe(id) {
 }
 
 // Retrait d'une recette de la planification
-function removeRecipeFromPlan(day, meal) {
+async function removeRecipeFromPlan(day, meal) {
   weekPlan[day][meal] = null;
+
+  // Si l'utilisateur est connecté et que l'intégration MongoDB est disponible
+  if (mongoIntegration && mongoIntegration.isAuthenticated()) {
+    try {
+      // Mettre à jour le plan de la semaine dans MongoDB
+      await mongoIntegration.updateWeekPlan(weekPlan);
+    } catch (error) {
+      console.error(
+        "Erreur lors de la mise à jour du plan de la semaine:",
+        error
+      );
+      showNotification("Erreur lors de la mise à jour du plan", "error");
+    }
+  }
+
   renderWeekPlan();
   generateShoppingSuggestions();
   showNotification("Recette retirée de la planification", "success");
@@ -998,6 +1142,7 @@ function isMobile() {
 // Replace the existing addToggleButtons and resize event listener with this improved version:
 
 let resizeTimeout;
+// Function to add toggle buttons to the page
 function addToggleButtons() {
   // Clean up existing buttons and events first
   document.querySelectorAll(".mobile-toggle-btn").forEach((btn) => {
@@ -1005,15 +1150,19 @@ function addToggleButtons() {
     btn.remove();
   });
 
+  // Check if the device is mobile
   if (isMobile()) {
     // For each day-card
     document.querySelectorAll(".day-card").forEach((card) => {
+      // Set up the toggle button for the day-card
       setupToggleButton(card, getDayName(card));
     });
 
     // For each recipe-card
     document.querySelectorAll(".recipe-card").forEach((card) => {
+      // Get the body of the recipe-card
       const body = card.querySelector(".recipe-body");
+      // If the body exists, set up the toggle button for the recipe-card
       if (body) {
         setupRecipeToggleButton(card, body);
       }
@@ -1021,7 +1170,9 @@ function addToggleButtons() {
   } else {
     // On desktop, ensure all content is visible
     document.querySelectorAll(".day-card, .recipe-body").forEach((el) => {
+      // Set the display style to empty string
       el.style.display = "";
+      // Add the active class to the element
       el.classList.add("active");
     });
   }
@@ -1072,26 +1223,41 @@ function getDayName(card) {
   return h ? h.textContent.trim() : "";
 }
 
+// Function to setup a toggle button for a card element
 function setupToggleButton(card, name) {
+  // Create a button element
   const btn = document.createElement("button");
+  // Set the class name of the button
   btn.className = "mobile-toggle-btn";
+  // Set the type of the button
   btn.type = "button";
 
+  // Insert the button before the first child of the card
   card.insertBefore(btn, card.firstChild);
 
+  // Get all children of the card except the button
   const content = Array.from(card.children).filter(
     (el) => !el.classList.contains("mobile-toggle-btn")
   );
 
   // Function to update button state
+  //This function updates the state of the button based on whether it is visible or not
   function updateButtonState(isVisible) {
+    //If the button is visible
     if (isVisible) {
+      //Set the innerHTML of the button to show the chevron up icon and the text "Masquer" followed by the name of the content
       btn.innerHTML = `<i class="fas fa-chevron-up"></i> <span>Masquer ${name}</span>`;
+      //Add the "active" class to the button
       btn.classList.add("active");
+      //Set the display of each element in the content array to an empty string, making them visible
       content.forEach((el) => (el.style.display = ""));
+      //If the button is not visible
     } else {
+      //Set the innerHTML of the button to show the chevron down icon and the text "Afficher" followed by the name of the content
       btn.innerHTML = `<i class="fas fa-chevron-down"></i> <span>Afficher ${name}</span>`;
+      //Remove the "active" class from the button
       btn.classList.remove("active");
+      //Set the display of each element in the content array to "none", making them invisible
       content.forEach((el) => (el.style.display = "none"));
     }
   }

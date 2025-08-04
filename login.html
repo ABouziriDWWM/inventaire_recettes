@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Inventaire de Courses</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Styles spécifiques à la page de connexion */
+        .auth-container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .auth-form .form-group {
+            width: 100%;
+        }
+
+        .auth-footer {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <main class="main-content">
+            <!-- Conteneur d'authentification -->
+            <div class="auth-container" id="auth-container">
+                <!-- Formulaire de connexion -->
+                <div id="login-container">
+                    <div class="auth-header">
+                        <h2><i class="fas fa-sign-in-alt"></i> Connexion</h2>
+                        <p>Accédez à votre compte existant</p>
+                    </div>
+
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required placeholder="Votre adresse email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Mot de passe</label>
+                            <input type="password" id="login-password" required placeholder="Votre mot de passe">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Se connecter
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Vous n'avez pas de compte ? <a class="toggle-form">Créer un compte</a></p>
+                    </div>
+                </div>
+
+                <!-- Formulaire d'inscription -->
+                <div id="register-container" class="hidden">
+                    <div class="auth-header">
+                        <h2><i class="fas fa-user-plus"></i> Inscription</h2>
+                        <p>Créez un nouveau compte</p>
+                    </div>
+
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="register-username">Nom d'utilisateur</label>
+                            <input type="text" id="register-username" required
+                                placeholder="Choisissez un nom d'utilisateur">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required placeholder="Votre adresse email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Mot de passe</label>
+                            <input type="password" id="register-password" required
+                                placeholder="Choisissez un mot de passe">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-confirm-password">Confirmer le mot de passe</label>
+                            <input type="password" id="register-confirm-password" required
+                                placeholder="Confirmez votre mot de passe">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> S'inscrire
+                        </button>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Vous avez déjà un compte ? <a class="toggle-form">Se connecter</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations utilisateur (visible après connexion) -->
+            <div id="user-info" class="auth-container hidden">
+                <!-- Contenu dynamique inséré par JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Bouton de déconnexion (visible après connexion) -->
+    <button id="logout-btn" class="btn btn-outline logout-btn hidden">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </button>
+
+    <script src="login.js"></script>
+</body>
+
+</html>
