@@ -66,8 +66,7 @@ class AuthManager {
     const loginForm = document.getElementById("login-form");
     const registerForm = document.getElementById("register-form");
     const logoutBtn = document.getElementById("logout-btn");
-    const toggleToRegister = document.getElementById("toggle-to-register");
-    const toggleToLogin = document.getElementById("toggle-to-login");
+    const toggleLinks = document.querySelectorAll(".toggle-form");
 
     if (loginForm) {
       loginForm.addEventListener("submit", (e) => {
@@ -89,19 +88,13 @@ class AuthManager {
       });
     }
 
-    if (toggleToRegister) {
-      toggleToRegister.addEventListener("click", (e) => {
+    // Add event listeners to all toggle-form links
+    toggleLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
         e.preventDefault();
         this.toggleAuthForms();
       });
-    }
-
-    if (toggleToLogin) {
-      toggleToLogin.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.toggleAuthForms();
-      });
-    }
+    });
   }
 
   toggleAuthForms() {
