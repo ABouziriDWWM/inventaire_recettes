@@ -18,16 +18,24 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+// Configuration CORS détaillée pour permettre les requêtes depuis le navigateur
+app.use(cors({
+    origin: '*', // Permet toutes les origines en développement
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // API Routes
 app.use('/api', routes);
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-    // Set static folder
-    app.use(express.static('client/build'));
+// Serve static assets in both development and production
+// Set static folder to serve HTML files
+app.use(express.static(path.join(__dirname, '/')));
 
+// In production, use client/build
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('client/build'));
+    
     app.get('*', (req, res) => {
         res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
     });

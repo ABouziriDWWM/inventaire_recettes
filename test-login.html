@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Connexion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de Connexion API</h1>
+    
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" value="test@example.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Mot de passe:</label>
+        <input type="password" id="password" value="password123">
+    </div>
+    
+    <button id="login-btn">Se connecter</button>
+    
+    <div id="result">Les résultats apparaîtront ici...</div>
+    
+    <script>
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Tentative de connexion...';
+            
+            try {
+                // Test avec l'URL relative
+                console.log('Test avec URL relative');
+                await testLogin('/api/auth/login', email, password, resultDiv);
+                
+                // Test avec l'URL complète
+                console.log('Test avec URL complète');
+                await testLogin('http://localhost:5000/api/auth/login', email, password, resultDiv);
+            } catch (error) {
+                console.error('Erreur globale:', error);
+                resultDiv.innerHTML += `<br>Erreur globale: ${error.message}`;
+            }
+        });
+        
+        async function testLogin(apiUrl, email, password, resultDiv) {
+            try {
+                console.log(`Tentative de connexion à ${apiUrl}`);
+                resultDiv.innerHTML += `<br>Tentative de connexion à ${apiUrl}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('Statut de la réponse:', response.status, response.statusText);
+                resultDiv.innerHTML += `<br>Statut de la réponse: ${response.status} ${response.statusText}`;
+                
+                // Vérifier le type de contenu
+                const contentType = response.headers.get('content-type');
+                console.log('Type de contenu:', contentType);
+                resultDiv.innerHTML += `<br>Type de contenu: ${contentType || 'non défini'}`;
+                
+                // Essayer de lire le corps de la réponse comme texte d'abord
+                const textResponse = await response.text();
+                console.log('Réponse texte:', textResponse);
+                resultDiv.innerHTML += `<br>Réponse texte: ${textResponse.substring(0, 100)}${textResponse.length > 100 ? '...' : ''}`;
+                
+                // Essayer de parser le JSON si possible
+                try {
+                    if (textResponse) {
+                        const jsonData = JSON.parse(textResponse);
+                        console.log('Données JSON:', jsonData);
+                        resultDiv.innerHTML += `<br>Données JSON: ${JSON.stringify(jsonData)}`;
+                    }
+                } catch (jsonError) {
+                    console.error('Erreur de parsing JSON:', jsonError);
+                    resultDiv.innerHTML += `<br>Erreur de parsing JSON: ${jsonError.message}`;
+                }
+                
+            } catch (fetchError) {
+                console.error(`Erreur lors de la requête à ${apiUrl}:`, fetchError);
+                resultDiv.innerHTML += `<br>Erreur lors de la requête à ${apiUrl}: ${fetchError.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

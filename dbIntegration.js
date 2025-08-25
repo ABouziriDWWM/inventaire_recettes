@@ -2,7 +2,8 @@
 
 class MongoDBIntegration {
     constructor() {
-        this.apiUrl = '/api';
+        // Utiliser l'URL complète avec le port pour les requêtes API
+        this.apiUrl = 'http://localhost:5000/api';
         this.token = localStorage.getItem('token');
         this.isConnected = !!this.token;
         

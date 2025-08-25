@@ -1,12 +1,27 @@
 // Authentication Controller for Inventaire de Courses et Recettes
 
-const { User } = require("./db");
+const { User } = require("./memoryStorage");
 const jwt = require("jsonwebtoken");
+
+// Helper function to generate JWT token
+const generateJwtToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || "your_jwt_secret_key", {
+    expiresIn: process.env.JWT_EXPIRE || "30d",
+  });
+};
 
 // Register a new user
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    // Validation des champs requis
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Tous les champs sont requis (username, email, password)",
+      });
+    }
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -18,26 +33,31 @@ exports.register = async (req, res) => {
     }
 
     // Create new user
-    const user = await User.create({
+    const user = new User({
       username,
       email,
       password,
     });
+    
+    await user.save();
 
     // Generate token
-    const token = user.getSignedJwtToken();
+    const token = generateJwtToken(user.id);
 
     res.status(201).json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
       },
     });
   } catch (error) {
     console.error("Register error:", error);
+    
+
+    
     res.status(500).json({
       success: false,
       message: "Erreur lors de l'inscription",
@@ -60,7 +80,7 @@ exports.login = async (req, res) => {
     }
 
     // Check for user
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -78,19 +98,22 @@ exports.login = async (req, res) => {
     }
 
     // Generate token
-    const token = user.getSignedJwtToken();
+    const token = generateJwtToken(user.id);
 
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
       },
     });
   } catch (error) {
     console.error("Login error:", error);
+    
+
+    
     res.status(500).json({
       success: false,
       message: "Erreur lors de la connexion",
@@ -102,12 +125,20 @@ exports.login = async (req, res) => {
 // Get current logged in user
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const users = await User.find();
+    const user = users.find(u => u.id === req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Utilisateur non trouvé",
+      });
+    }
 
     res.status(200).json({
       success: true,
       data: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         createdAt: user.createdAt,
@@ -154,7 +185,16 @@ exports.protect = async (req, res, next) => {
     );
 
     // Add user to request
-    req.user = await User.findById(decoded.id);
+    const users = await User.find();
+    req.user = users.find(u => u.id === decoded.id);
+    
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Utilisateur non trouvé",
+      });
+    }
+    
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);

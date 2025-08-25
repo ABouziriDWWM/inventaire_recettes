@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Redirection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Test de Redirection - Inventaire Recettes</h1>
+    
+    <div class="test-section">
+        <h3>Test de Connexion et Redirection</h3>
+        <button onclick="testLogin()">Tester la Connexion</button>
+        <button onclick="testRedirect()">Tester la Redirection Manuelle</button>
+        <div id="result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>État Actuel</h3>
+        <p><strong>Page actuelle:</strong> <span id="currentPage"></span></p>
+        <p><strong>Token stocké:</strong> <span id="tokenStatus"></span></p>
+        <p><strong>Utilisateur:</strong> <span id="userStatus"></span></p>
+    </div>
+
+    <script>
+        // Afficher l'état actuel
+        document.getElementById('currentPage').textContent = window.location.pathname;
+        document.getElementById('tokenStatus').textContent = localStorage.getItem('token') ? 'Présent' : 'Absent';
+        document.getElementById('userStatus').textContent = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).username : 'Non connecté';
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Test en cours...';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Stocker les données comme le fait login.js
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Connexion réussie!</strong><br>
+                        Token: ${data.token.substring(0, 20)}...<br>
+                        Utilisateur: ${data.user.username}<br>
+                        <em>Redirection dans 2 secondes...</em>
+                    `;
+                    
+                    // Redirection après 2 secondes
+                    setTimeout(() => {
+                        console.log('Redirection vers index.html...');
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Erreur de connexion');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Erreur:</strong> ${error.message}`;
+            }
+        }
+        
+        function testRedirect() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = 'Redirection manuelle vers index.html dans 1 seconde...';
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

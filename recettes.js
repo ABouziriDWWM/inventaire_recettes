@@ -5,17 +5,13 @@ function checkRecipeAuthentication() {
   const token = localStorage.getItem("authToken");
   const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-  if (!token && !isLoggedIn) {
-    window.location.href = "login.html";
-    return false;
-  }
+  // Allow access to recipes page regardless of authentication status
+  // Users can view recipes without being logged in
   return true;
 }
 
-// Check authentication before any initialization
-if (!checkRecipeAuthentication()) {
-  throw new Error("Redirecting to login");
-}
+// Allow access to recipes page - authentication is optional
+checkRecipeAuthentication();
 
 // Données de démonstration
 const sampleRecipes = [

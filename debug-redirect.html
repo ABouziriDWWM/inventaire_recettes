@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Redirection</title>
+</head>
+<body>
+    <h1>Debug Redirection</h1>
+    <div id="debug-info"></div>
+    <button onclick="clearStorage()">Vider le localStorage</button>
+    <button onclick="setLoggedIn()">Simuler connexion</button>
+    <button onclick="checkStatus()">Vérifier statut</button>
+    
+    <script>
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('debug-info').innerHTML += '<p>localStorage vidé</p>';
+        }
+        
+        function setLoggedIn() {
+            localStorage.setItem('token', 'test-token');
+            localStorage.setItem('user', JSON.stringify({username: 'test'}));
+            document.getElementById('debug-info').innerHTML += '<p>Utilisateur connecté simulé</p>';
+        }
+        
+        function checkStatus() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const currentPage = window.location.pathname.split('/').pop();
+            
+            document.getElementById('debug-info').innerHTML += `
+                <p><strong>Page actuelle:</strong> ${currentPage}</p>
+                <p><strong>Token:</strong> ${token || 'Aucun'}</p>
+                <p><strong>User:</strong> ${user || 'Aucun'}</p>
+            `;
+        }
+        
+        // Vérifier le statut au chargement
+        window.onload = function() {
+            checkStatus();
+        }
+    </script>
+</body>
+</html>

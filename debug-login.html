@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        input, button { padding: 10px; margin: 5px; }
+        .result { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Test de Connexion et Redirection</h1>
+    
+    <div class="form-group">
+        <input type="email" id="email" placeholder="Email" value="test@example.com">
+    </div>
+    <div class="form-group">
+        <input type="password" id="password" placeholder="Mot de passe" value="password123">
+    </div>
+    <div class="form-group">
+        <button onclick="testLogin()">Tester Connexion</button>
+        <button onclick="testRedirect()">Tester Redirection</button>
+    </div>
+    
+    <div id="result" class="result"></div>
+    
+    <script>
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('Tentative de connexion...');
+                resultDiv.innerHTML = 'Connexion en cours...';
+                
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log('Réponse reçue:', response.status);
+                const data = await response.json();
+                console.log('Données:', data);
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    resultDiv.innerHTML = `<strong>Connexion réussie!</strong><br>
+                        Token: ${data.token.substring(0, 50)}...<br>
+                        User: ${data.user.username} (${data.user.email})<br>
+                        <button onclick="testRedirect()">Rediriger maintenant</button>`;
+                } else {
+                    resultDiv.innerHTML = `<strong>Erreur:</strong> ${data.message}`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                resultDiv.innerHTML = `<strong>Erreur:</strong> ${error.message}`;
+            }
+        }
+        
+        function testRedirect() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML += '<br><strong>Redirection vers index.html...</strong>';
+            console.log('Redirection vers index.html');
+            
+            setTimeout(() => {
+                console.log('Exécution de la redirection');
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+        
+        // Vérifier si l'utilisateur est déjà connecté
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            if (token && user) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Utilisateur déjà connecté:</strong><br>
+                    Token: ${token.substring(0, 50)}...<br>
+                    User: ${JSON.parse(user).username}<br>
+                    <button onclick="testRedirect()">Rediriger vers index.html</button><br>
+                    <button onclick="localStorage.clear(); location.reload()">Déconnecter</button>`;
+            }
+        }
+    </script>
+</body>
+</html>

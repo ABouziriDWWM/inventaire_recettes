@@ -657,45 +657,15 @@ document.head.appendChild(notificationStyles);
 // Initialisation de l'application
 let inventoryManager;
 
-class AuthManager {
-  constructor() {
-    this.token = localStorage.getItem("authToken");
-  }
-
-  isAuthenticated() {
-    return !!this.token && !this.isTokenExpired();
-  }
-
-  async checkAuthStatus() {
-    if (!this.isAuthenticated()) {
-      // Redirect to login page
-      window.location.href = "login.html";
-      return false;
-    }
-    return true;
-  }
-
-  isTokenExpired() {
-    // Logic to check if token is expired
-    if (!this.token) return true;
-
-    try {
-      const payload = JSON.parse(atob(this.token.split(".")[1]));
-      return Date.now() >= payload.exp * 1000;
-    } catch (error) {
-      return true;
-    }
-  }
-}
+// AuthManager is now imported from login.js
 
 document.addEventListener("DOMContentLoaded", () => {
   // Vérifier si l'authentification est disponible
   if (typeof AuthManager !== "undefined") {
-    // Attendre que l'authentification soit vérifiée
+    // Utiliser l'AuthManager de login.js qui gère l'interface utilisateur
     const authManager = new AuthManager();
-    authManager.checkAuthStatus().then(() => {
-      inventoryManager = new InventoryManager();
-    });
+    // Initialiser l'inventaire directement - AuthManager gère déjà l'UI
+    inventoryManager = new InventoryManager();
   } else {
     // Initialiser directement sans authentification
     inventoryManager = new InventoryManager();
